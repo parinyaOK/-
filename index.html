@@ -174,3 +174,140 @@
         
         <!-- Footer -->
         <div class="bg-gray-50 p-4 text-center text-xs text-gray-400 border-t border-gray-100">
+            ออกแบบสำหรับการเรียนรู้และการคำนวณอย่างง่าย
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-50">
+        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
+        <span>คัดลอกคำตอบแล้ว</span>
+    </div>
+
+    <script>
+        // ย้ายการประกาศตัวแปรขึ้นมาด้านบนเพื่อให้แน่ใจว่าโค้ดทำงานได้แน่นอน
+        const inputA = document.getElementById('inputA');
+        const inputB = document.getElementById('inputB');
+        const inputC = document.getElementById('inputC');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const explanationBox = document.getElementById('explanationBox');
+
+        // Explanation Spans
+        const expA = document.getElementById('expA');
+        const expB = document.getElementById('expB');
+        const expC = document.getElementById('expC');
+        const formulaA = document.getElementById('formulaA');
+        const formulaB = document.getElementById('formulaB');
+        const formulaC = document.getElementById('formulaC');
+        const formulaResult = document.getElementById('formulaResult');
+        const mathStep1 = document.getElementById('mathStep1');
+        const mathStep2 = document.getElementById('mathStep2');
+
+        function formatNumber(num) {
+            // Check if number has decimals
+            if (num % 1 === 0) {
+                return num.toLocaleString('th-TH');
+            } else {
+                // Show up to 4 decimal places, removing trailing zeros
+                return parseFloat(num.toFixed(4)).toLocaleString('th-TH');
+            }
+        }
+
+        function calculate() {
+            // ป้องกัน error กรณี element หาไม่เจอ
+            if (!inputA || !inputB || !inputC) return;
+
+            const a = parseFloat(inputA.value);
+            const b = parseFloat(inputB.value);
+            const c = parseFloat(inputC.value);
+
+            // Update explanation text placeholders even if calculating isn't possible yet
+            if(expA) expA.textContent = inputA.value || 'A';
+            if(expB) expB.textContent = inputB.value || 'B';
+            if(expC) expC.textContent = inputC.value || 'C';
+            if(formulaA) formulaA.textContent = inputA.value || 'A';
+            if(formulaB) formulaB.textContent = inputB.value || 'B';
+            if(formulaC) formulaC.textContent = inputC.value || 'C';
+
+            if (isNaN(a) || isNaN(b) || isNaN(c)) {
+                if(resultDisplay) resultDisplay.textContent = "...";
+                if(explanationBox) explanationBox.classList.add('opacity-50');
+                if(formulaResult) formulaResult.textContent = "?";
+                if(mathStep1) mathStep1.textContent = "รอข้อมูล...";
+                if(mathStep2) mathStep2.textContent = "รอข้อมูล...";
+                return;
+            }
+
+            if (a === 0) {
+                if(resultDisplay) {
+                    resultDisplay.textContent = "หาค่าไม่ได้";
+                    resultDisplay.classList.add('text-red-500');
+                }
+                return;
+            } else {
+                if(resultDisplay) resultDisplay.classList.remove('text-red-500');
+            }
+
+            if(explanationBox) explanationBox.classList.remove('opacity-50');
+
+            // Calculation logic
+            const step1 = b / a;
+            const result = step1 * c;
+
+            // Update Display
+            if(resultDisplay) resultDisplay.textContent = formatNumber(result);
+            if(formulaResult) formulaResult.textContent = formatNumber(result);
+
+            // Update Math Steps
+            if(mathStep1) mathStep1.textContent = `${formatNumber(b)} ÷ ${formatNumber(a)} = ${formatNumber(step1)}`;
+            if(mathStep2) mathStep2.textContent = `${formatNumber(step1)} × ${formatNumber(c)} = ${formatNumber(result)}`;
+        }
+
+        function clearInputs() {
+            if(inputA) inputA.value = '';
+            if(inputB) inputB.value = '';
+            if(inputC) inputC.value = '';
+            calculate();
+            if(inputA) inputA.focus();
+        }
+
+        function copyResult() {
+            const text = resultDisplay ? resultDisplay.textContent : "";
+            if (text === "..." || text === "หาค่าไม่ได้" || !text) return;
+
+            // Use generic clipboard API with fallback not needed for modern browsers in this context, 
+            // but ensuring compatibility via execCommand for some older webview contexts if needed,
+            // standard navigator.clipboard is best.
+            
+            // Create a temporary textarea to copy from (most compatible)
+            const el = document.createElement('textarea');
+            el.value = text.replace(/,/g, ''); // Remove commas for raw number copy
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            showToast();
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            if(!toast) return;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2000);
+        }
+
+        // Initialize Icons safely at the end
+        try {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        } catch (error) {
+            console.warn("Lucide icons failed to load:", error);
+        }
+    </script>
+</body>
+</html>
